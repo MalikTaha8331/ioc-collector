@@ -1,0 +1,18 @@
+Threat Intel Bulletin - APT Campaign Analysis
+
+The campaign, tracked internally as OPERATION SILENTHOOK, leverages a phishing
+kit hosted at hxxps://secure-login-update[.]net/portal/index.php to harvest
+credentials. Post-compromise, the actor drops a second-stage loader
+(SHA256: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08)
+which beacons to C2 infrastructure at 91.203.145[.]12 and backup-c2[.]duckdns[.]org
+on port 443.
+
+Related CVEs exploited for initial access include CVE-2024-3400 and CVE-2023-46805.
+Analysts observed the actor's contact email leaked in a prior breach:
+threat.actor.contact[at]tutanota[.]com
+
+Ransom payments (where applicable) were requested to the following BTC address:
+1BoatSLRHtKNngkdXEeobR76b53LETtpyT
+
+IOC feed also includes an earlier-stage dropper with MD5 hash
+e99a18c428cb38d5f260853678922e03 seen across three separate victim networks.

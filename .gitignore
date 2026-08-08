@@ -1,0 +1,15 @@
+# IOC databases and exports (generated data, not source)
+*.db
+*.json
+!package.json
+iocs.csv
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
