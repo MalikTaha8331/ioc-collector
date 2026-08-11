@@ -46,19 +46,61 @@ identified all 28 malware hashes, 3 C2 IPs, 2 disguised C2 domains, and the
 CVE, while filtering out unrelated citation/reference links and config-file
 false positives.
 
-## Phase 2 (planned): Tor / dark web collection
+## Phase 2 (current): Tor / dark web collection
 
-- `stem` + Tor SOCKS5 proxy for onion source fetching
-- Config-driven seed list of known onion paste/forum sources
-- Rate limiting + circuit rotation
+- `stem` + Tor SOCKS5 proxy (`tor_connector.py`) for onion source fetching, with retries
+- Same trafilatura + noise-filtering extraction pipeline as Phase 1, applied to onion pages
+- **Batch scanning** (`batch_scan.py`) — config-driven seed list (`seeds.json`), rate limiting
+  with randomized jitter between requests, and failure resilience (one dead source doesn't
+  stop the batch)
+- **Circuit rotation** — optional fresh Tor identity (new exit node) every N requests via
+  the control port's NEWNYM signal, to avoid per-IP rate limiting/blocking on onion services
+- Persistent scan audit log (`scan_log.jsonl`)
 - Passive OSINT only — no interaction with marketplaces or illegal content
+
+### Tor setup
+
+1. Install the standalone Tor service (Expert Bundle from torproject.org — not Tor Browser)
+2. Add to `torrc`:
+   ```
+   ControlPort 9051
+   CookieAuthentication 1
+   ```
+3. Run `tor.exe` and wait for `Bootstrapped 100% (done)`
+4. `pip install -r requirements.txt`
+5. Verify connectivity: `python tor_connector.py`
+
+### Usage
+
+```bash
+# Single onion source
+python cli.py --onion http://exampleonionaddress.onion/
+
+# Batch scan from seed list
+copy seeds.example.json seeds.json   # then edit seeds.json with real sources
+python batch_scan.py --seeds seeds.json
+
+# With circuit rotation every request
+python batch_scan.py --seeds seeds.json --rotate-every 1
+
+# Custom rate limiting
+python batch_scan.py --seeds seeds.json --delay 15 --jitter 5
+```
+
+**On sourcing seed targets:** populate `seeds.json` with sources from your own legitimate
+research — e.g. known ransomware leak-site addresses from public trackers like
+[ransomware.live](https://www.ransomware.live), which publishes known group infrastructure
+for exactly this kind of defensive monitoring use case.
 
 ## Project structure
 
 ```
 ioc_collector/
-├── extractor.py       # core regex + refang + noise-filtering + storage engine
-├── cli.py              # command-line interface
+├── extractor.py         # core regex + refang + noise-filtering + storage engine
+├── cli.py                # command-line interface (clearnet + single onion fetch)
+├── tor_connector.py      # Tor SOCKS5 connectivity + circuit rotation
+├── batch_scan.py         # batch onion scanning with rate limiting
+├── seeds.example.json    # template for seeds.json (your real source list, gitignored)
 ├── examples/
 │   └── sample_report.txt
 ├── requirements.txt

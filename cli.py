@@ -44,10 +44,39 @@ def fetch_url(url: str) -> str:
     return text
 
 
+def fetch_onion(url: str) -> str:
+    """
+    Fetch a .onion URL through the local Tor SOCKS5 proxy, then run it
+    through the same trafilatura content-extraction pipeline as clearnet
+    fetches — so onion source noise (nav, sidebar, forum chrome) gets
+    stripped the same way.
+    """
+    from tor_connector import fetch_onion as tor_fetch_onion, TorConnectionError
+    import trafilatura
+
+    try:
+        raw_html = tor_fetch_onion(url)
+    except TorConnectionError as e:
+        print(f"[!] {e}")
+        sys.exit(1)
+
+    text = trafilatura.extract(raw_html, include_links=True, include_tables=True)
+    if not text:
+        # onion sites are often bare-bones forums/paste sites that trafilatura's
+        # "is this an article" heuristics may reject — fall back to crude
+        # tag-stripping so we still extract whatever text is on the page
+        import re
+        text = re.sub(r"<script.*?</script>", " ", raw_html, flags=re.DOTALL | re.IGNORECASE)
+        text = re.sub(r"<style.*?</style>", " ", text, flags=re.DOTALL | re.IGNORECASE)
+        text = re.sub(r"<[^>]+>", " ", text)
+    return text
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Extract IOCs from a URL, file, or raw text.")
+    parser = argparse.ArgumentParser(description="Extract IOCs from a URL, file, raw text, or onion source.")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--url", help="Fetch and scan a webpage")
+    group.add_argument("--onion", help="Fetch and scan a .onion URL through Tor")
     group.add_argument("--file", help="Scan a local text file")
     group.add_argument("--text", help="Scan a raw text string")
     parser.add_argument("--db", default="iocs.db", help="SQLite DB path (default: iocs.db)")
@@ -63,6 +92,13 @@ def main():
         print(f"[*] Fetching {args.url} ...")
         text = fetch_url(args.url)
         source = args.url
+    elif args.onion:
+        if not args.onion.endswith(".onion") and ".onion/" not in args.onion:
+            print("[!] --onion expects a .onion address. Use --url for clearnet sites.")
+            sys.exit(1)
+        print(f"[*] Fetching {args.onion} via Tor (this can take longer than clearnet)...")
+        text = fetch_onion(args.onion)
+        source = args.onion
     elif args.file:
         with open(args.file, "r", errors="ignore") as f:
             text = f.read()

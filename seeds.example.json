@@ -1,0 +1,11 @@
+{
+  "_comment": "Config-driven seed list for onion source monitoring. Populate 'sources' with your own legitimate research targets (e.g. known ransomware leak-site domains from public trackers like ransomware.live, or sources encountered during your internship). Each entry needs a name and url. Keep this file out of git if your source list itself is sensitive (see .gitignore).",
+
+  "sources": [
+    {
+      "name": "connectivity_test_duckduckgo",
+      "url": "http://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/",
+      "notes": "Known-good onion service, used only to verify the pipeline is working end-to-end. Not a real intel source."
+    }
+  ]
+}

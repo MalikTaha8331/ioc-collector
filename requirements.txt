@@ -1,4 +1,4 @@
-# core extractor + CLI have zero external deps (stdlib only)
-# add these when we wire up Tor in phase 2:
-# stem>=1.8.2
-# PySocks>=1.7.1
+trafilatura>=2.0.0
+requests>=2.31.0
+PySocks>=1.7.1
+stem>=1.8.2

@@ -1,0 +1,21 @@
+# IOC databases and exports (generated data, not source)
+*.db
+*.json
+!package.json
+iocs.csv
+scan_log.jsonl
+
+# Seed list may contain sensitive research targets — don't commit by default.
+# seeds.example.json (a template) is still tracked.
+seeds.json
+!seeds.example.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
