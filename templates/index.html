@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOC Collector — Case File</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="case-file">
+
+  <header class="case-header">
+    <div class="case-tab">TLP:AMBER</div>
+    <h1>IOC Collector</h1>
+    <p class="subtitle">Indicators of Compromise — extraction ledger</p>
+  </header>
+
+  <section class="intake">
+    <form action="/scan" method="post" class="intake-form">
+      <div class="mode-toggle">
+        <label class="mode-option">
+          <input type="radio" name="mode" value="text" checked>
+          <span>Paste text</span>
+        </label>
+        <label class="mode-option">
+          <input type="radio" name="mode" value="url">
+          <span>Fetch URL</span>
+        </label>
+      </div>
+
+      <textarea
+        name="input"
+        placeholder="Paste a threat intel report, article text, or a URL (e.g. https://example.com/advisory) — defanged IOCs like hxxp:// and 1.2.3[.]4 are handled automatically."
+        rows="6"
+      ></textarea>
+
+      <button type="submit" class="submit-btn">Extract IOCs</button>
+    </form>
+
+    {% if error %}
+      <div class="error-banner">
+        <span class="error-label">ERROR</span> {{ error }}
+      </div>
+    {% endif %}
+  </section>
+
+  {% if iocs is not none %}
+    {% if total == 0 %}
+      <section class="empty-state">
+        <p class="empty-label">NO INDICATORS FOUND</p>
+        <p class="empty-hint">Nothing extractable in this input. Try pasting a threat report with IPs, domains, hashes, or CVEs.</p>
+      </section>
+    {% else %}
+      <section class="results">
+        <div class="results-header">
+          <span class="results-count">{{ total }} indicator{{ 's' if total != 1 else '' }} extracted</span>
+          <span class="results-source">source: {{ source }}</span>
+          <div class="export-links">
+            <a href="/export/json" class="export-link">JSON</a>
+            <a href="/export/csv" class="export-link">CSV</a>
+          </div>
+        </div>
+
+        {% for ioc_type, values in iocs.items() %}
+          <div class="ioc-group ioc-{{ ioc_type }}">
+            <div class="ioc-group-label">
+              <span class="ioc-tab">{{ ioc_type|upper }}</span>
+              <span class="ioc-count">{{ values|length }}</span>
+            </div>
+            <ul class="ioc-values">
+              {% for v in values %}
+                <li class="ioc-value">{{ v }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+      </section>
+    {% endif %}
+  {% endif %}
+
+  <footer class="case-footer">
+    <p>Local extraction engine — no data leaves this machine except to fetch a URL you provide.</p>
+    <p class="footer-note">Dark web / batch scanning available via CLI: <code>cli.py --onion</code>, <code>batch_scan.py</code></p>
+  </footer>
+
+</div>
+
+</body>
+</html>

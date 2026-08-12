@@ -92,6 +92,27 @@ research — e.g. known ransomware leak-site addresses from public trackers like
 [ransomware.live](https://www.ransomware.live), which publishes known group infrastructure
 for exactly this kind of defensive monitoring use case.
 
+## Web UI (local demo)
+
+A local-only Flask interface for pasting text or a URL and viewing extracted
+IOCs in a browser, with JSON/CSV export. Same extraction engine and noise
+filtering as the CLI.
+
+```bash
+pip install -r requirements.txt
+python3 app.py
+```
+
+Open `http://127.0.0.1:5000`.
+
+**This is a local demo tool, not meant for public deployment.** It
+intentionally does not expose onion/Tor fetching over the web — dark web
+collection and batch scanning stay CLI-only (`cli.py --onion`,
+`batch_scan.py`). Running an open web-facing fetcher that can reach onion
+services is a meaningfully different risk than a local single-user CLI tool,
+so that capability is deliberately kept off any interface meant to be shared
+or exposed.
+
 ## Project structure
 
 ```
@@ -100,6 +121,9 @@ ioc_collector/
 ├── cli.py                # command-line interface (clearnet + single onion fetch)
 ├── tor_connector.py      # Tor SOCKS5 connectivity + circuit rotation
 ├── batch_scan.py         # batch onion scanning with rate limiting
+├── app.py                # local Flask web UI
+├── templates/index.html
+├── static/style.css
 ├── seeds.example.json    # template for seeds.json (your real source list, gitignored)
 ├── examples/
 │   └── sample_report.txt
